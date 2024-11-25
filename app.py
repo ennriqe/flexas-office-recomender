@@ -45,13 +45,26 @@ def create_input_interface():
             value=10
         )
         
+        # Initialize session state for estimated value if not exists
+        if "estimated_value" not in st.session_state:
+            st.session_state.estimated_value = 5000
+            
+        def update_value():
+            try:
+                value = st.session_state.estimated_value_input
+                if 0 <= value <= 1000000:
+                    st.session_state.estimated_value = value
+            except ValueError:
+                pass
+        
         estimated_value = st.number_input(
             "Estimated Value",
             min_value=0,
-            max_value=1000000,
-            value=5000,
-            # Prevent empty values
-            step=1
+            max_value=10000000,
+            value=st.session_state.estimated_value,
+            step=1,
+            key="estimated_value_input",
+            on_change=update_value
         )
 
     with col2:
@@ -143,7 +156,7 @@ def create_input_interface():
         'new_maximumworkstation': max_workstations,
         'new_minimumworkstations': min_workstations,
         'time_between_viewing_and_opportunity': time_between,  # Hardcoded to 9001
-        'estimatedvalue': estimated_value if estimated_value is not None else 0,  # Handle None values
+        'estimatedvalue': st.session_state.estimated_value,  # Use the session state value
         'selected_city': selected_city,
         'selected_year': selected_year,  # Hardcoded to 2024
         'conventional': conventional,
