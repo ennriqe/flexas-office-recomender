@@ -75,7 +75,7 @@ def create_input_interface():
             'Aalsmeer', 'Alkmaar', 'Antwerpen', 'Apeldoorn', 'Bussum', 'Den Bosch', 
             'Deventer', 'Diegem', 'Dordrecht', 'Ede', 'Gent', 'Heerlen',
             'Lelystad', 'Maastricht', 'München', 'Roosendaal', 'Tilburg', 
-            'Veenendaal', 'Venlo', 'Woerden', 'Zwolle'
+            'Veenendaal', 'Venlo', 'Woerden', 'Zwolle', 'Zaandam', 'Vianen', 'Hilversum', 'Gouda', 'Mechelen', 'Houten', 'Leiden', 'Luxembourg', 'Nieuwegein', 'Unknown', 'Arnhem', 'Schipol-Rijk', 
         ]
         
         # City mapping for special cases
