@@ -20,6 +20,23 @@ def load_dependencies():
     return model, scaler, product_cols
 
 def create_input_interface():
+    # Add custom CSS for title size
+    st.markdown("""
+        <style>
+            .block-container {
+                padding-top: 1rem;
+                padding-bottom: 0rem;
+            }
+            h1 {
+                font-size: 2rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            h2 {
+                font-size: 1.4rem !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    
     st.title("Office Building Recommendation System")
     
     # Create columns for better layout
@@ -279,17 +296,53 @@ def display_recommendations(predictions, buildings_df, product_cols, filters):
         col_list, col_map = st.columns([1, 1])
         
         with col_list:
-            st.write("Top 10 Recommended Buildings (Active Only):")
+            
+            # Add custom CSS for table-like layout
+            st.markdown("""
+                <style>
+                    div.row-widget.stHorizontal {
+                        margin-bottom: -15px;
+                    }
+                    hr {
+                        margin: 5px 0px;
+                    }
+                    /* Prevent text wrapping in columns */
+                    div[data-testid="column"] {
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                    /* Add some bottom margin to headers */
+                    .header {
+                        margin-bottom: 10px;
+                        font-weight: bold;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            # Add headers
+            col1, col2, col3 = st.columns([3, 2, 1])
+            with col1:
+                st.markdown("<div class='header'>Building Name</div>", unsafe_allow_html=True)
+            with col2:
+                st.markdown("<div class='header'>Confidence</div>", unsafe_allow_html=True)
+            with col3:
+                st.markdown("<div class='header'>Map</div>", unsafe_allow_html=True)
+            
+            # Add a divider after headers
+            st.markdown("---")
+            
+            # List the buildings
             for idx, row in top_10.iterrows():
-                col1, col2, col3 = st.columns([2, 1, 1])
+                col1, col2, col3 = st.columns([3, 2, 1])
                 with col1:
                     st.write(f"**{row['name']}**")
                 with col2:
-                    st.write(f"Confidence: {row['probability']:.2%}")
+                    st.write(f"{row['probability']:.2%}")
                 with col3:
                     has_coords = not (pd.isna(row['fl_drupallatitude']) or pd.isna(row['fl_drupallongitude']))
                     st.write("📍" if has_coords else "❌")
-                st.divider()
+                st.markdown("---")  # Thinner divider
         
         with col_map:
             # Prepare data for the map
