@@ -52,15 +52,37 @@ def create_input_interface():
             "Maximum Workstations",
             min_value=0,
             max_value=1000,
-            value=20
+            value=None,
+            placeholder="Enter maximum workstations"
         )
+        max_workstations = -1 if max_workstations is None else max_workstations
         
         min_workstations = st.number_input(
             "Minimum Workstations",
             min_value=0,
             max_value=1000,
-            value=10
+            value=None,
+            placeholder="Enter minimum workstations"
         )
+        min_workstations = -1 if min_workstations is None else min_workstations
+
+        new_sqfeetmax = st.number_input(
+            "Maximum Square Feet",
+            min_value=0,
+            max_value=100000,
+            value=None,
+            placeholder="Enter maximum square feet"
+        )
+        new_sqfeetmax = -1 if new_sqfeetmax is None else new_sqfeetmax
+        
+        new_sqfeetmin = st.number_input(
+            "Minimum Square Feet", 
+            min_value=0,
+            max_value=100000,
+            value=None,
+            placeholder="Enter minimum square feet"
+        )
+        new_sqfeetmin = -1 if new_sqfeetmin is None else new_sqfeetmin
         
         # Initialize session state for estimated value if not exists
         if "estimated_value" not in st.session_state:
@@ -172,6 +194,8 @@ def create_input_interface():
         'n_buildings_offered': n_buildings,  # Hardcoded to 5
         'new_maximumworkstation': max_workstations,
         'new_minimumworkstations': min_workstations,
+        'new_sqfeetmin': new_sqfeetmin,
+        'new_sqfeetmax': new_sqfeetmax,
         'time_between_viewing_and_opportunity': time_between,  # Hardcoded to 9001
         'estimatedvalue': st.session_state.estimated_value,  # Use the session state value
         'selected_city': selected_city,
@@ -187,7 +211,7 @@ def prepare_model_input(user_input, scaler):
     # Define columns in exact order as expected by scaler
     columns = [
         'n_buildings_offered', 'new_maximumworkstation',
-        'new_minimumworkstations', 'time_between_viewing_and_opportunity',
+        'new_minimumworkstations', 'new_sqfeetmin', 'new_sqfeetmax','time_between_viewing_and_opportunity',
         'estimatedvalue', 'Visited', 'year_2015', 'year_2016', 'year_2017',
         'year_2018', 'year_2019', 'year_2020', 'year_2021', 'year_2022',
         'year_2023', 'year_2024', 'city_Amsterdam', 'city_Paris',
@@ -209,7 +233,6 @@ def prepare_model_input(user_input, scaler):
         'city_Neuilly-sur-Seine', 'city_Zaandam', 'city_Boulogne-Billancourt',
         'city_Leuven', 'city_Venlo', 'city_Woerden', 'city_Schiphol-Rijk',
         'city_Bussum', 'city_Roosendaal', 'city_Unknown',
-        'estimatedvalue_missing'
     ]
     
     # Create DataFrame with all columns initialized to 0
@@ -219,17 +242,27 @@ def prepare_model_input(user_input, scaler):
     input_df.loc[0, 'n_buildings_offered'] = user_input['n_buildings_offered']
     input_df.loc[0, 'new_maximumworkstation'] = user_input['new_maximumworkstation']
     input_df.loc[0, 'new_minimumworkstations'] = user_input['new_minimumworkstations']
+    input_df.loc[0, 'new_sqfeetmin'] = user_input['new_sqfeetmin']
+    input_df.loc[0, 'new_sqfeetmax'] = user_input['new_sqfeetmax']
     input_df.loc[0, 'time_between_viewing_and_opportunity'] = user_input['time_between_viewing_and_opportunity']
     input_df.loc[0, 'estimatedvalue'] = user_input['estimatedvalue']
     input_df.loc[0, 'Visited'] = 1
     input_df.loc[0, f"year_{user_input['selected_year']}"] = 1
     input_df.loc[0, f"city_{user_input['selected_city']}"] = 1
     
-    # Handle missing values
-    input_df.loc[0, 'estimatedvalue_missing'] = 1 if pd.isna(user_input['estimatedvalue']) else 0
     print(input_df.to_dict())
     # Scale the input
     input_scaled = scaler.transform(input_df)
+    input_scaled_df = pd.DataFrame(input_scaled, columns=input_df.columns)
+    if input_df.loc[0, 'new_sqfeetmin'] == -1:
+        input_scaled_df.loc[0, 'new_sqfeetmin'] = -1
+    if input_df.loc[0, 'new_sqfeetmax'] == -1:
+        input_scaled_df.loc[0, 'new_sqfeetmax'] = -1
+    if input_df.loc[0, 'new_maximumworkstation'] == -1:
+        input_scaled_df.loc[0, 'new_maximumworkstation'] = -1
+    if input_df.loc[0, 'new_minimumworkstations'] == -1:
+        input_scaled_df.loc[0, 'new_minimumworkstations'] = -1
+    input_scaled = input_scaled_df.values
 
     # print(pd.DataFrame(input_scaled).to_dict())
     
