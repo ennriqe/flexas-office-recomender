@@ -276,8 +276,8 @@ def display_recommendations(predictions, buildings_df, product_cols, filters):
                 for idx, row in map_data.iterrows():
                     folium.Marker(
                         location=[row['latitude'], row['longitude']],
-                        popup=row['building_name'],  # Only show building name in popup
-                        tooltip=f"#{idx + 1}",  # Keep the index in hover tooltip
+                        popup=row['building_name'],
+                        tooltip=f"#{idx + 1}",
                         icon=folium.Icon(
                             icon='building',
                             prefix='fa',
@@ -285,8 +285,14 @@ def display_recommendations(predictions, buildings_df, product_cols, filters):
                         )
                     ).add_to(m)
                 
-                # Display the map
-                st_folium(m, width=400, height=400)
+                # Display the map with a key and return_map_bounds=True
+                map_data = st_folium(
+                    m, 
+                    width=400, 
+                    height=400,
+                    key="recommendation_map",
+                    returned_objects=["last_active_drawing"],
+                )
             else:
                 st.warning("No coordinate data available for mapping")
             
@@ -301,7 +307,7 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == "flexas2024":
+        if st.session_state["password"] == st.secrets["password"]:
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # don't store password
         else:
