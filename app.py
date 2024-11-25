@@ -57,32 +57,54 @@ def create_input_interface():
     with col2:
         st.subheader("Location Preferences")
         
-        # City selection with search
+        # Excluded cities
+        excluded_cities = [
+            'Aalsmeer', 'Alkmaar', 'Antwerpen', 'Apeldoorn', 'Bussum', 'Den Bosch', 
+            'Deventer', 'Diegem', 'Dordrecht', 'Ede', 'Gent', 'Heerlen',
+            'Lelystad', 'Maastricht', 'München', 'Roosendaal', 'Tilburg', 
+            'Veenendaal', 'Venlo', 'Woerden', 'Zwolle'
+        ]
+        
+        # City mapping for special cases
+        city_mapping = {
+            "Amsterdam Zuidoost": "Amsterdam-Zuidoost",
+            "Bruxelles": "Brussels",
+            "Den Haag": "The Hague",
+            "Köln": "Cologne",
+            "Schiphol-Rijk": "Schiphol"
+        }
+        
+        # Filter out excluded cities from the original list
         cities = [
             'Amsterdam', 'Paris', 'Rotterdam', 'Utrecht', 'Den Haag',
             'Eindhoven', 'Almere', 'Berlin', 'Amsterdam Zuidoost',
-            'Haarlem', 'Breda', 'Den Bosch', 'Amersfoort', 'München',
+            'Haarlem', 'Breda', 'Amersfoort', 'München',
             'Arnhem', 'Hoofddorp', 'Bruxelles', 'Brussels', 'Hamburg',
-            'Amstelveen', 'Antwerpen', 'Rijswijk', 'Brussel', 'Groningen',
-            'Leiden', 'Zwolle', 'Capelle aan den IJssel', 'Schiphol',
-            'Nieuwegein', 'Frankfurt', 'Nijmegen', 'Gent', 'Zoetermeer',
-            'Maastricht', 'Delft', 'Alkmaar', 'Zaventem', 'Hilversum',
-            'Apeldoorn', 'Düsseldorf', 'Tilburg', 'Vianen', 'Antwerp',
-            'Diemen', 'Gouda', 'Munich', 'Barendrecht', 'Dordrecht',
-            'Schiedam', 'Mechelen', 'Luxembourg', 'Deventer', 'Veenendaal',
-            'Köln', 'Diegem', 'Houten', 'Heerlen', 'Aalsmeer', 'Lelystad',
-            'Ede', 'London', 'Neuilly-sur-Seine', 'Zaandam',
-            'Boulogne-Billancourt', 'Leuven', 'Venlo', 'Woerden',
-            'Schiphol-Rijk', 'Bussum', 'Roosendaal'
+            'Amstelveen', 'Rijswijk', 'Brussel', 'Groningen',
+            'Leiden', 'Capelle aan den IJssel', 'Schiphol',
+            'Nieuwegein', 'Frankfurt', 'Nijmegen', 'Zoetermeer',
+            'Delft', 'Zaventem', 'Hilversum', 'Düsseldorf',
+            'Vianen', 'Antwerp', 'Diemen', 'Gouda', 'Munich',
+            'Barendrecht', 'Schiedam', 'Mechelen', 'Luxembourg',
+            'Köln', 'Houten', 'Aalsmeer', 'London',
+            'Neuilly-sur-Seine', 'Zaandam', 'Boulogne-Billancourt',
+            'Leuven', 'Schiphol-Rijk'
         ]
+        
+        # Remove excluded cities
+        cities = [city for city in cities if city not in excluded_cities]
         
         selected_city = st.selectbox(
             "Primary City (type to search)",
-            options=sorted(cities),  # Sort cities alphabetically for easier searching
+            options=sorted(cities),
             help="Start typing to search for a city"
         )
         
-
+        # Store both the display name and the mapped name in session state
+        if selected_city in city_mapping:
+            st.session_state.mapped_city = city_mapping[selected_city]
+        else:
+            st.session_state.mapped_city = selected_city
         
         # Create three columns for better layout of checkboxes
         filter_col1, filter_col2 = st.columns(2)
@@ -212,11 +234,14 @@ def display_recommendations(predictions, buildings_df, product_cols, filters):
             how='left'
         )
         
+        # Use the mapped city name for filtering
+        city_for_filtering = st.session_state.mapped_city
+        
         # Start with base filters
         mask = (
             (recommendations['statecode'] == 0) & 
             (~recommendations['name'].str.contains(" - Address ", na=False)) &
-            (recommendations['new_region'] == filters['selected_city'])  # Match new_region with selected city
+            (recommendations['new_region'] == city_for_filtering)  # Use mapped city name
         )
         
         # Add type filters if specified
